@@ -59,5 +59,4 @@ Before opening a pull request, read `CONTRIBUTING.md` and `docs/taxonomy.md`.
 
 ## License
 
-Code is licensed under the Apache License 2.0. Documentation, taxonomy text, and benchmark descriptions are licensed under CC BY 4.0. See `LICENSE` and `LICENSE-DOCS.md`.
-
+Code is licensed under the Apache License 2.0. Documentation, taxonomy text, and benchmark descriptions are licensed under CC BY 4.0. See `LICENSE` and `docs/content-license.md`.
