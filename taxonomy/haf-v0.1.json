@@ -1,0 +1,85 @@
+{
+  "name": "Hilbert Agent Failure Taxonomy",
+  "version": "0.1",
+  "status": "draft",
+  "categories": [
+    {
+      "id": "HAF-01",
+      "name": "Goal and Reasoning Failure",
+      "description": "The agent misunderstands the task, constraints, plan, or evidence.",
+      "subcategories": ["Goal Misinterpretation", "Constraint Misinterpretation", "Planning Failure", "Plan-Adherence Failure", "Unsupported Assumption", "Fabricated Information"],
+      "references": ["AgentRx"]
+    },
+    {
+      "id": "HAF-02",
+      "name": "Tool Selection Failure",
+      "description": "The agent chooses the wrong tool, omits a required tool, invokes an unsupported capability, or sequences tools incorrectly.",
+      "subcategories": ["Wrong Tool", "Unnecessary Tool", "Missing Required Tool", "Unsupported Capability", "Wrong Tool Sequence"],
+      "references": ["Berkeley Function Calling Leaderboard"]
+    },
+    {
+      "id": "HAF-03",
+      "name": "Tool Execution Failure",
+      "description": "The agent invokes a tool incorrectly or handles tool runtime conditions poorly.",
+      "subcategories": ["Invalid Invocation", "Invalid Arguments", "Schema Violation", "Timeout", "Rate Limit", "Tool Unavailable", "Malformed Response"],
+      "references": ["AgentRx", "ToolSandbox"]
+    },
+    {
+      "id": "HAF-04",
+      "name": "Data and Observation Failure",
+      "description": "The agent uses stale, missing, incorrect, conflicting, misread, or unverified data.",
+      "subcategories": ["Stale Data", "Missing Data", "Incorrect Data", "Conflicting Data", "Tool-Output Misinterpretation", "Unverified Data"],
+      "references": ["AgentRx"]
+    },
+    {
+      "id": "HAF-05",
+      "name": "Context and Memory Failure",
+      "description": "The agent loses relevant context, uses irrelevant context, pollutes memory, or confuses instruction priority.",
+      "subcategories": ["Relevant Context Lost", "Irrelevant Context Used", "Context Contamination", "Memory Poisoning", "Cross-Session Contamination", "Instruction-Priority Confusion"],
+      "references": ["Agent Security Bench"]
+    },
+    {
+      "id": "HAF-06",
+      "name": "State and Concurrency Failure",
+      "description": "The agent acts on state that changed, is only partially updated, or cannot be verified.",
+      "subcategories": ["Stale State", "State Changed During Execution", "Concurrent Modification", "Partial State Transition", "Acknowledgement Loss", "Execution Status Unknown", "State Verification Failure"],
+      "references": ["ToolSandbox"]
+    },
+    {
+      "id": "HAF-07",
+      "name": "Authorization and Authority Failure",
+      "description": "The agent lacks authorization, exceeds scope, bypasses approval, or trusts the wrong authority source.",
+      "subcategories": ["Missing Authorization", "Expired or Revoked Authorization", "Approval Threshold Violation", "Scope or Privilege Violation", "Human Approval Bypass", "Authority-Source Confusion", "Delegation or Trust Violation"],
+      "references": ["AgentRx"]
+    },
+    {
+      "id": "HAF-08",
+      "name": "Security and Adversarial Failure",
+      "description": "The agent is compromised or manipulated by attacks against prompts, tools, plugins, data, credentials, memory, or inter-agent trust.",
+      "subcategories": ["Direct Prompt Injection", "Indirect Prompt Injection", "Goal Hijacking", "Tool or Plugin Poisoning", "Data Exfiltration", "Credential or Secret Exposure", "Memory Poisoning", "Inter-Agent Trust Attack"],
+      "references": ["AgentDojo", "Agent Security Bench"]
+    },
+    {
+      "id": "HAF-09",
+      "name": "Recovery and Retry Failure",
+      "description": "The agent recovers unsafely, retries without verification, loops excessively, rolls back incorrectly, or aborts too early.",
+      "subcategories": ["Unsafe Retry Under Unknown State", "Non-Idempotent Retry", "Missing Verification Before Retry", "Excessive Retry Loop", "Incorrect Rollback", "Unsafe Fallback", "Premature Abort", "Failure to Recover"],
+      "references": ["ReliabilityBench"]
+    },
+    {
+      "id": "HAF-10",
+      "name": "Side-Effect Failure",
+      "description": "The agent creates the wrong external effect, duplicates an action, affects the wrong target, or increases blast radius.",
+      "subcategories": ["Duplicate Action", "Incorrect Target", "Incorrect Value or Amount", "Partial Execution", "Irreversible Unsafe Action", "Excessive Blast Radius", "Action After Cancellation or Revocation", "Unintended External Effect"],
+      "references": ["ToolEmu"]
+    },
+    {
+      "id": "HAF-11",
+      "name": "Autonomy and Human-Handoff Failure",
+      "description": "The agent fails to ask, escalate, abort, respect rejection, or correctly interpret human instruction.",
+      "subcategories": ["Failure to Ask", "Failure to Escalate", "Failure to Abort", "Unnecessary Escalation", "Human Rejection Ignored", "Human Instruction Misinterpreted", "Premature Autonomous Action"],
+      "references": ["Agent-SafetyBench", "R-Judge"]
+    }
+  ]
+}
+
