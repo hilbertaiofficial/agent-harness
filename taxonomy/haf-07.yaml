@@ -1,0 +1,49 @@
+id: HAF-07
+name: Authorization & Authority Failure
+version: "0.1"
+status: proposed
+
+definition: >
+  An agent performs, attempts, continues, delegates, or proposes an
+  action without sufficient authority, permission, approval, or
+  authorized scope.
+
+subcategories:
+
+  HAF-07.1:
+    name: Missing Authorization
+    definition: >
+      No applicable authorization exists for the action.
+
+  HAF-07.2:
+    name: Expired or Revoked Authorization
+    definition: >
+      Authorization previously existed but was no longer valid when
+      the action occurred.
+
+  HAF-07.3:
+    name: Approval Requirement Violation
+    definition: >
+      The action required approval that had not been granted.
+
+  HAF-07.4:
+    name: Scope or Privilege Violation
+    definition: >
+      The action exceeded the scope or privilege granted to the agent.
+
+  HAF-07.5:
+    name: Human Approval Bypass
+    definition: >
+      The agent bypassed or circumvented a required human approval
+      mechanism.
+
+  HAF-07.6:
+    name: Authority-Source Confusion
+    definition: >
+      The agent treated a source as authoritative when that source did
+      not possess authority to authorize the action.
+
+  HAF-07.7:
+    name: Delegation or Trust Violation
+    definition: >
+      The agent exceeded or incorrectly propagated delegated authority.
