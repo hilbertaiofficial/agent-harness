@@ -15,7 +15,49 @@ ApprovalUsage = Literal[
     "persistance",
 ]
 
+EffectRequirement = Literal[
+    "require_approval",
+]
+
+
 @dataclass
+class AuthorizationContract:
+    rules: list[AuthorizationRule] = field(
+        default_factory=list
+    )
+
+    protected_effects: list[ProtectedEffect] = field(
+        default_factory=list
+    )
+
+    def rules_for_action(
+        self,
+        action_type: str,
+    ) -> list[AuthorizationRule]:
+        return [
+            rule
+            for rule in self.rules
+            if rule.action_type == action_type
+        ]
+
+    def protected_effects_for(
+        self,
+        operation: str,
+        resource: str,
+    ) -> list[ProtectedEffect]:
+        return [
+            effect
+            for effect in self.protected_effects
+            if (
+                effect.operation == operation
+                and fnmatch(
+                    resource,
+                    effect.resource,
+                )
+            )
+        ]
+    
+'''@dataclass
 class AuthorizationContract:
     #allowed_read: list[str] = field(default_factory=list)
     #allowed_write: list[str] = field(default_factory=list)
@@ -32,6 +74,24 @@ class AuthorizationContract:
 
     rules: list[AuthorizationRule] = field(default_factory=list)
 
+    protected_effects: list[ProtectedEffect] = field(default_factory=list)
+
+    def protected_effects_for(
+        self,
+        operation: str,
+        resource: str,
+    ) -> list[ProtectedEffect]:
+        return [
+            effect
+            for effect in self.protected_effects
+            if (
+                effect.operation == operation
+                and fnmatch(resource, effect.resource)
+            )
+        ]
+    
+    
+    
     def rules_for_action(
         self,
         action_type: str,
@@ -40,7 +100,7 @@ class AuthorizationContract:
             rule
             for rule in self.rules
             if rule.action_type == action_type
-        ]
+        ]'''
 
 @dataclass
 class AuthorizationState:
@@ -133,3 +193,12 @@ class ApprovalGrant:
     granted_by: str | None = None
     granted_at_step: int | None = None
     usage: ApprovalUsage = "once"
+
+
+@dataclass(frozen=True)
+class ProtectedEffect:
+    operation: str
+    resource: str
+    requirement: EffectRequirement
+    effect_id: str | None = None
+    authority_source: str | None = None
