@@ -1,6 +1,13 @@
 """Hilbert Agent Harness."""
 
-from .trajectory import Trajectory, TrajectoryStep
+from .trajectory import (
+    StateTransition,
+    Trajectory,
+    TrajectoryStep,
+)
 
-__all__ = ["Trajectory", "TrajectoryStep"]
-
+__all__ = [
+    "StateTransition",
+    "Trajectory",
+    "TrajectoryStep",
+]

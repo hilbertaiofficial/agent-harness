@@ -24,3 +24,11 @@ class Trajectory:
     engine: str
     instruction: str
     steps: list[TrajectoryStep] = field(default_factory=list)
+    state_transitions: list[StateTransition] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class StateTransition:
+    resource: str
+    operation: str
+    caused_by_step: int | None = None
