@@ -161,10 +161,10 @@ def _check_rules(
     if approval_rules:
         #if not state.has_approval(step.action_type, step.target):
         approval = state.find_approval(
-            step.action_type,
-            step.target,
+            subject_type="action",
+            subject=step.action_type,
+            resource=step.target,
         )
-
         if approval is None:
             return Finding(
                 haf_code="HAF-07.3",
@@ -219,8 +219,13 @@ def check_authorization(
             continue
 
         if step.action_type == "approval":
-            approved_action = step.arguments.get(
-                "action_type",
+            subject_type = step.arguments.get(
+                "subject_type",
+                "action",
+            )
+
+            subject = step.arguments.get(
+                "subject",
             )
 
             approved_resource = step.arguments.get(
@@ -232,14 +237,15 @@ def check_authorization(
                 "once",
             )
 
-            if approved_action and approved_resource:
+            if subject and approved_resource:
                 state.grant_approval(
-                    action_type=approved_action,
+                    #action_type=approved_action,
+                    subject_type=subject_type,
+                    subject=subject,
                     resource=approved_resource,
                     granted_by=step.actor,
                     granted_at_step=step.index,
                     usage=usage,
-
                 )
 
             continue

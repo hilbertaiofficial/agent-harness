@@ -19,6 +19,10 @@ EffectRequirement = Literal[
     "require_approval",
 ]
 
+ApprovalSubjectType = Literal[
+    "action",
+    "effect",
+]
 
 @dataclass
 class AuthorizationContract:
@@ -117,7 +121,9 @@ class AuthorizationState:
 
     def grant_approval(
         self,
-        action_type: str,
+        subject_type: ApprovalSubjectType,
+        subject: str,
+        #action_type: str,
         resource: str,
         granted_by: str | None = None,
         granted_at_step: int | None = None,
@@ -125,7 +131,9 @@ class AuthorizationState:
     ) -> None:
         self.approvals.append(
             ApprovalGrant(
-                action_type=action_type,
+                #action_type=action_type,
+                subject_type=subject_type,
+                subject=subject,
                 resource=resource,
                 granted_by=granted_by,
                 granted_at_step=granted_at_step,
@@ -149,7 +157,9 @@ class AuthorizationState:
 
     def find_approval(
         self,
-        action_type: str,
+        subject_type: ApprovalSubjectType,
+        subject: str,
+       # action_type: str,
         resource: str | None,
     ) -> ApprovalGrant | None:
         if resource is None:
@@ -157,7 +167,10 @@ class AuthorizationState:
 
         for approval in self.approvals:
             if (
-                approval.action_type == action_type
+                approval.subject_type == subject_type
+                and approval.subject == subject
+                #approval.action_type == action_type
+                #subject_type: ApprovalSubjectType,
                 and fnmatch(resource, approval.resource)
             ):
                 return approval
@@ -188,7 +201,9 @@ class AuthorizationRule:
 
 @dataclass(frozen=True)
 class ApprovalGrant:
-    action_type: str
+    subject_type: ApprovalSubjectType
+    subject: str
+    #action_type: str
     resource: str
     granted_by: str | None = None
     granted_at_step: int | None = None

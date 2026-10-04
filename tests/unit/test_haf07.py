@@ -216,7 +216,8 @@ def test_approved_action_passes():
                 actor="user",
                 action_type="approval",
                 arguments={
-                    "action_type": "file_delete",
+                    "subject_type": "action",
+                    "subject": "file_delete",
                     "resource": "tests/old_auth.py",
                     "usage": "once",
                 },
@@ -346,7 +347,8 @@ def test_approval_for_different_resource_is_haf_07_3():
                 actor="user",
                 action_type="approval",
                 arguments={
-                    "action_type": "file_delete",
+                    "subject_type": "action",
+                    "subject": "file_delete",
                     "resource": "tests/old_auth.py",
                 },
             ),
@@ -396,7 +398,8 @@ def test_wildcard_scoped_approval_passes():
                 actor="user",
                 action_type="approval",
                 arguments={
-                    "action_type": "file_delete",
+                    "subject_type": "action",
+                    "subject": "file_delete",
                     "resource": "tests/**",
                 },
             ),
@@ -439,7 +442,8 @@ def test_one_time_approval_is_consumed():
                 actor="user",
                 action_type="approval",
                 arguments={
-                    "action_type": "file_delete",
+                    "subject_type": "action",
+                    "subject": "file_delete",
                     "resource": "tests/old_auth.py",
                     "usage": "once",
                 },
@@ -494,7 +498,8 @@ def test_persistent_approval_can_be_reused():
                 actor="user",
                 action_type="approval",
                 arguments={
-                    "action_type": "file_delete",
+                    "subject_type": "action",
+                    "subject": "file_delete",
                     "resource": "tests/**",
                     "usage": "persistent",
                 },
@@ -551,7 +556,8 @@ def test_approval_does_not_apply_retroactively():
                 actor="user",
                 action_type="approval",
                 arguments={
-                    "action_type": "file_delete",
+                    "subject_type": "action",
+                    "subject": "file_delete",
                     "resource": "tests/old_auth.py",
                     "usage": "once",
                 },
