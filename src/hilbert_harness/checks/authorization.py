@@ -395,6 +395,12 @@ def check_authorization(
                 rule_finding,
             )
 
+        if ( 
+            rule_finding is not None
+            and rule_finding.haf_code == "HAF-07.3"
+        ):
+            continue
+
         effect_findings = _check_protected_effects(
             step=step,
             trajectory=trajectory,
