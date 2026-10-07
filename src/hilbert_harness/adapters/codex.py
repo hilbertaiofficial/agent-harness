@@ -1,6 +1,7 @@
 from typing import Any
 
 from hilbert_harness.ir import Trajectory, TrajectoryStep
+import json
 
 
 
@@ -62,4 +63,21 @@ def adapt_codex_run(
         engine="codex",
         instruction=instruction,
         steps=steps,
+    )
+
+def adapt_codex_jsonl(
+    jsonl: str,
+    run_id: str,
+    instruction: str,
+) -> Trajectory:
+    events = [
+        json.loads(line)
+        for line in jsonl.splitlines()
+        if line.strip()
+    ]
+
+    return adapt_codex_run(
+        events,
+        run_id=run_id,
+        instruction=instruction,
     )
