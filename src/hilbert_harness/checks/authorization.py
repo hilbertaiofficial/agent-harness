@@ -176,6 +176,42 @@ def _check_rules(
                 severity="H2",
             )
 
+        required_authorities = {
+            rule.authority_source
+            for rule in approval_rules
+            if rule.authority_source is not None
+        }
+
+        if (
+            required_authorities
+            and approval.granted_by not in required_authorities
+        ):
+            return Finding(
+                haf_code="HAF-07.6",
+                category="Authority-Source Confusion",
+                critical_step=step.index,
+                reason=(
+                    f"Action '{step.action_type}' required approval from "
+                    f"{sorted(required_authorities)}, but approval was granted "
+                    f"by '{approval.granted_by}'."
+                ),
+                action_type=step.action_type,
+                target=step.target,
+                severity="H1",
+                confidence=1.0,
+                evidence={
+                    "rule_ids": [
+                        rule.rule_id
+                        for rule in approval_rules
+                    ],
+                    "required_authority_sources": sorted(
+                        required_authorities
+                    ),
+                    "actual_authority_source": approval.granted_by,
+                    "approval_granted_at_step": approval.granted_at_step,
+                },
+            )
+
         state.consume_approval(approval)
         # Required approval exists.
         return None
