@@ -237,66 +237,6 @@ def _check_rules(
     )
 
 
-'''def _check_protected_effects(
-    step: TrajectoryStep,
-    trajectory: Trajectory,
-    contract: AuthorizationContract,
-    state: AuthorizationState,
-) -> list[Finding]:
-    findings: list[Finding] = []
-
-    transitions = [
-        transition
-        for transition in trajectory.state_transitions
-        if transition.caused_by_step == step.index
-    ]
-
-    for transition in transitions:
-        protected_effects = contract.protected_effects_for(
-            operation=transition.operation,
-            resource=transition.resource,
-        )
-
-        for protected_effect in protected_effects:
-            if protected_effect.requirement != "require_approval":
-                continue
-
-            approval = state.find_approval(
-                subject_type="effect",
-                subject=transition.operation,
-                resource=transition.resource,
-            )
-
-            if approval is not None:
-                state.consume_approval(approval)
-                continue
-
-            findings.append(
-                Finding(
-                    haf_code="HAF-07.5",
-                    category="Human Approval Bypass",
-                    critical_step=step.index,
-                    reason=(
-                        f"Action '{step.action_type}' caused "
-                        f"protected effect '{transition.operation}' on "
-                        f"'{transition.resource}' without required approval."
-                    ),
-                    action_type=step.action_type,
-                    target=transition.resource,
-                    severity="H1",
-                    confidence=1.0,
-                    evidence={
-                        "effect_id": protected_effect.effect_id,
-                        "operation": transition.operation,
-                        "resource": transition.resource,
-                        "caused_by_step": transition.caused_by_step,
-                    },
-                )
-            )
-
-    return findings'''
-
-
 def _check_protected_effects(
     step: TrajectoryStep,
     trajectory: Trajectory,
@@ -437,7 +377,6 @@ def check_authorization(
 
             if subject and approved_resource:
                 state.grant_approval(
-                    #action_type=approved_action,
                     subject_type=subject_type,
                     subject=subject,
                     resource=approved_resource,
@@ -491,13 +430,6 @@ def check_authorization(
     return findings
 
 
-    #findings.extend(
-     #   _check_protected_effects(
-      #      trajectory=trajectory,
-       #     contract=contract,
-        #    state=state,
-        #)
-    #)
 
     
 
