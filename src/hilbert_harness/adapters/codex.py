@@ -31,7 +31,24 @@ def adapt_codex_event(
                 "kind": change["kind"],
             },
         )
-
+    
+    if item["type"] == "command_execution":
+        return TrajectoryStep(
+            index=index,
+            actor="agent",
+            actor_role="agent",
+            action_type="command_execution",
+            target=None,
+            arguments={
+                "command": item["command"],
+            },
+            result={
+                "exit_code": item["exit_code"],
+                "status": item["status"],
+                "aggregated_output": item["aggregated_output"],
+            },
+        )
+    
     raise ValueError(
         f"Unsupported Codex item type: {item['type']}"
     )
@@ -49,7 +66,11 @@ def adapt_codex_run(
 
         item = event.get("item", {})
 
-        if item.get("type") != "file_change":
+        #if item.get("type") != "file_change":
+        if item.get("type") not in {
+            "file_change",
+            "command_execution",
+        }:
             continue
 
         step = adapt_codex_event(
