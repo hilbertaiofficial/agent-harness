@@ -9,6 +9,8 @@ from .authorization import (
     AuthorizationState,
     EffectRequirement,
     ProtectedEffect,
+    DelegationGrant,
+
 )
 
 __all__ = [
@@ -19,4 +21,6 @@ __all__ = [
     "AuthorizationState",
     "EffectRequirement",
     "ProtectedEffect",
+    "DelegationGrant",
+
 ]

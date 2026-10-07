@@ -68,3 +68,23 @@ def test_action_approval_does_not_satisfy_effect_approval():
     )
 
     assert effect_approval is None
+
+def test_scoped_approval_is_not_found_for_different_recipient():
+    state = AuthorizationState()
+
+    state.grant_approval(
+        subject_type="action",
+        subject="file_delete",
+        resource="tests/old_auth.py",
+        granted_by="user",
+        granted_to="agent-a",
+    )
+
+    approval = state.find_approval(
+        subject_type="action",
+        subject="file_delete",
+        resource="tests/old_auth.py",
+        granted_to="agent-b",
+    )
+
+    assert approval is None

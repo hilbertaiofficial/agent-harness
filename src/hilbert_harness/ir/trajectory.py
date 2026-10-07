@@ -9,6 +9,7 @@ class TrajectoryStep:
     index: int
     actor: str
     action_type: str
+    actor_role: str | None = None
 
     target: str | None = None
     arguments: dict[str, Any] = field(default_factory=dict)
