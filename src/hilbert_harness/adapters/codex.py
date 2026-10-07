@@ -1,6 +1,6 @@
 from typing import Any
 
-from hilbert_harness.ir import TrajectoryStep
+from hilbert_harness.ir import Trajectory, TrajectoryStep
 
 
 
@@ -33,4 +33,33 @@ def adapt_codex_event(
 
     raise ValueError(
         f"Unsupported Codex item type: {item['type']}"
+    )
+
+def adapt_codex_run(
+    events: list[dict[str, Any]],
+    run_id: str,
+    instruction: str,
+) -> Trajectory:
+    steps = []
+
+    for event in events:
+        if event.get("type") != "item.completed":
+            continue
+
+        item = event.get("item", {})
+
+        if item.get("type") != "file_change":
+            continue
+
+        step = adapt_codex_event(
+            event,
+            index=len(steps) + 1,
+        )
+        steps.append(step)
+
+    return Trajectory(
+        run_id=run_id,
+        engine="codex",
+        instruction=instruction,
+        steps=steps,
     )

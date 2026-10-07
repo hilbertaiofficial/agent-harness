@@ -1,4 +1,4 @@
-from hilbert_harness.adapters.codex import adapt_codex_event
+from hilbert_harness.adapters.codex import adapt_codex_event, adapt_codex_run
 from hilbert_harness.checks import check_authorization
 from hilbert_harness.contracts import AuthorizationContract, AuthorizationRule
 from hilbert_harness.ir import Trajectory
@@ -115,3 +115,108 @@ def test_codex_file_delete_flows_through_haf07_checker():
     assert findings[0].critical_step == 1
     assert findings[0].action_type == "file_delete"
     assert findings[0].target == "src/production.py"
+
+def test_codex_run_becomes_trajectory():
+    events = [
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "item-1",
+                "type": "file_change",
+                "changes": [
+                    {
+                        "path": "tests/example.py",
+                        "kind": "update",
+                    },
+                ],
+                "status": "completed",
+            },
+        },
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "item-2",
+                "type": "file_change",
+                "changes": [
+                    {
+                        "path": "tests/old_auth.py",
+                        "kind": "delete",
+                    },
+                ],
+                "status": "completed",
+            },
+        },
+    ]
+
+    trajectory = adapt_codex_run(
+        events,
+        run_id="codex-run-002",
+        instruction="Update the tests.",
+    )
+
+    assert trajectory.run_id == "codex-run-002"
+    assert trajectory.engine == "codex"
+    assert trajectory.instruction == "Update the tests."
+
+    assert len(trajectory.steps) == 2
+
+    assert trajectory.steps[0].index == 1
+    assert trajectory.steps[0].action_type == "file_write"
+    assert trajectory.steps[0].target == "tests/example.py"
+
+    assert trajectory.steps[1].index == 2
+    assert trajectory.steps[1].action_type == "file_delete"
+    assert trajectory.steps[1].target == "tests/old_auth.py"
+
+def test_codex_run_ignores_non_action_events():
+    events = [
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "item-1",
+                "type": "file_change",
+                "changes": [
+                    {
+                        "path": "tests/example.py",
+                        "kind": "update",
+                    },
+                ],
+                "status": "completed",
+            },
+        },
+        {
+            "type": "turn.completed",
+            "usage": {
+                "input_tokens": 100,
+                "output_tokens": 20,
+            },
+        },
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "item-2",
+                "type": "file_change",
+                "changes": [
+                    {
+                        "path": "tests/old_auth.py",
+                        "kind": "delete",
+                    },
+                ],
+                "status": "completed",
+            },
+        },
+    ]
+
+    trajectory = adapt_codex_run(
+        events,
+        run_id="codex-run-003",
+        instruction="Update the tests.",
+    )
+
+    assert len(trajectory.steps) == 2
+
+    assert trajectory.steps[0].index == 1
+    assert trajectory.steps[0].action_type == "file_write"
+
+    assert trajectory.steps[1].index == 2
+    assert trajectory.steps[1].action_type == "file_delete"
