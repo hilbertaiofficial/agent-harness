@@ -1,5 +1,6 @@
 from hilbert_harness.adapters.codex import adapt_codex_event, adapt_codex_run, adapt_codex_jsonl
 from hilbert_harness.checks import check_authorization
+from hilbert_harness.ir.effects import EffectObservation
 from hilbert_harness.contracts import AuthorizationContract, AuthorizationRule
 from hilbert_harness.ir import Trajectory
 
@@ -349,3 +350,43 @@ def test_real_codex_jsonl_becomes_trajectory():
 
     assert trajectory.steps[1].result["exit_code"] == 0
     assert "example.txt" in trajectory.steps[1].arguments["command"]
+
+
+def test_codex_run_can_include_independent_effect_observations():
+    observation = EffectObservation(
+        operation="file_write",
+        resource="example.txt",
+        observed_at_step=1,
+        evidence={
+            "source": "filesystem_snapshot",
+            "before_sha256": "abc123",
+            "after_sha256": "def456",
+        },
+    )
+
+    events = [
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "item_1",
+                "type": "command_execution",
+                "command": "printf 'new content' > example.txt",
+                "exit_code": 0,
+                "status": "completed",
+                "aggregated_output": "",
+            },
+        }
+    ]
+
+    trajectory = adapt_codex_run(
+        events,
+        run_id="codex-run-with-effects",
+        instruction="Update example.txt.",
+        effect_observations=[observation],
+    )
+
+    assert len(trajectory.steps) == 1
+    assert trajectory.steps[0].action_type == "command_execution"
+
+    assert trajectory.effect_observations == [observation]
+    assert trajectory.effect_observations[0].resource == "example.txt"

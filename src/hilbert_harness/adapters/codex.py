@@ -1,5 +1,5 @@
 from typing import Any
-
+from hilbert_harness.ir.effects import EffectObservation
 from hilbert_harness.ir import Trajectory, TrajectoryStep
 import json
 
@@ -57,6 +57,7 @@ def adapt_codex_run(
     events: list[dict[str, Any]],
     run_id: str,
     instruction: str,
+    effect_observations: list[EffectObservation] | None = None,
 ) -> Trajectory:
     steps = []
 
@@ -84,6 +85,11 @@ def adapt_codex_run(
         engine="codex",
         instruction=instruction,
         steps=steps,
+        effect_observations=(
+            effect_observations
+            if effect_observations is not None
+            else []
+        ),
     )
 
 def adapt_codex_jsonl(
