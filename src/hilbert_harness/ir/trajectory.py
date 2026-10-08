@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from hilbert_harness.ir.effects import EffectObservation
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -26,6 +26,7 @@ class Trajectory:
     instruction: str
     steps: list[TrajectoryStep] = field(default_factory=list)
     state_transitions: list[StateTransition] = field(default_factory=list)
+    effect_observations: list[EffectObservation] = field(default_factory=list)                                                 
 
 
 @dataclass(frozen=True)
