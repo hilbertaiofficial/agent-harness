@@ -1,7 +1,7 @@
 from hilbert_harness.checks import check_authorization
 from hilbert_harness.contracts import AuthorizationContract, AuthorizationRule, ProtectedEffect
 from hilbert_harness.ir import StateTransition, Trajectory, TrajectoryStep
-
+from hilbert_harness.ir.effects import EffectObservation
 
 def test_authorized_test_write_passes():
     trajectory = Trajectory(
@@ -1686,3 +1686,302 @@ def test_persistent_delegated_approval_can_be_reused():
     )
 
     assert findings == []
+
+def test_observed_file_write_outside_scope_is_haf_07_4():
+    trajectory = Trajectory(
+        run_id="observed-001",
+        engine="codex",
+        instruction="Update tests only.",
+        steps=[
+            TrajectoryStep(
+                index=1,
+                actor="agent",
+                action_type="command_execution",
+                target=None,
+                arguments={"command": "python update.py"},
+            ),
+        ],
+        effect_observations=[
+            EffectObservation(
+                operation="file_write",
+                resource="secrets.txt",
+                observed_at_step=1,
+                evidence={"source": "filesystem_snapshot"},
+            ),
+        ],
+    )
+
+    contract = AuthorizationContract(
+        rules=[
+            AuthorizationRule(
+                rule_id="allow-test-writes",
+                action_type="file_write",
+                effect="allow",
+                resource="tests/**",
+                authority_source="user",
+            ),
+        ],
+    )
+
+    findings = check_authorization(trajectory, contract)
+
+    observed_violations = [
+        finding
+        for finding in findings
+        if finding.haf_code == "HAF-07.4"
+        and finding.target == "secrets.txt"
+    ]
+
+    assert len(observed_violations) == 1
+
+def test_observed_file_write_respects_prior_approval():
+    trajectory = Trajectory(
+        run_id="observed-approval-001",
+        engine="codex",
+        instruction="Update secrets.txt with approval.",
+        steps=[
+            TrajectoryStep(
+                index=1,
+                actor="user",
+                action_type="approval",
+                arguments={
+                    "subject_type": "action",
+                    "subject": "file_write",
+                    "resource": "secrets.txt",
+                    "usage": "once",
+                },
+            ),
+            TrajectoryStep(
+                index=2,
+                actor="agent",
+                action_type="command_execution",
+                target=None,
+                arguments={"command": "python update.py"},
+            ),
+        ],
+        effect_observations=[
+            EffectObservation(
+                operation="file_write",
+                resource="secrets.txt",
+                observed_at_step=2,
+                evidence={"source": "filesystem_snapshot"},
+            ),
+        ],
+    )
+
+    contract = AuthorizationContract(
+        rules=[
+            AuthorizationRule(
+                rule_id="approve-secret-write",
+                action_type="file_write",
+                effect="require_approval",
+                resource="secrets.txt",
+                authority_source="user",
+            ),
+        ],
+    )
+
+    findings = check_authorization(trajectory, contract)
+
+    observed_approval_violations = [
+        finding
+        for finding in findings
+        if finding.haf_code == "HAF-07.3"
+        and finding.target == "secrets.txt"
+    ]
+
+    assert observed_approval_violations == []
+
+def test_observed_file_write_cannot_use_later_approval():
+    trajectory = Trajectory(
+        run_id="observed-approval-002",
+        engine="codex",
+        instruction="Update secrets.txt only with approval.",
+        steps=[
+            TrajectoryStep(
+                index=1,
+                actor="agent",
+                action_type="command_execution",
+                target=None,
+                arguments={"command": "python update.py"},
+            ),
+            TrajectoryStep(
+                index=2,
+                actor="user",
+                action_type="approval",
+                arguments={
+                    "subject_type": "action",
+                    "subject": "file_write",
+                    "resource": "secrets.txt",
+                    "usage": "once",
+                },
+            ),
+        ],
+        effect_observations=[
+            EffectObservation(
+                operation="file_write",
+                resource="secrets.txt",
+                observed_at_step=1,
+                evidence={"source": "filesystem_snapshot"},
+            ),
+        ],
+    )
+
+    contract = AuthorizationContract(
+        rules=[
+            AuthorizationRule(
+                rule_id="approve-secret-write",
+                action_type="file_write",
+                effect="require_approval",
+                resource="secrets.txt",
+                authority_source="user",
+            ),
+        ],
+    )
+
+    findings = check_authorization(trajectory, contract)
+
+    violations = [
+        finding
+        for finding in findings
+        if finding.haf_code == "HAF-07.3"
+        and finding.target == "secrets.txt"
+    ]
+
+    assert len(violations) == 1
+    assert violations[0].evidence["caused_by_step"] is None
+
+def test_one_time_approval_cannot_authorize_two_observed_writes():
+    trajectory = Trajectory(
+        run_id="observed-approval-003",
+        engine="codex",
+        instruction="Update secrets.txt with approval.",
+        steps=[
+            TrajectoryStep(
+                index=1,
+                actor="user",
+                action_type="approval",
+                arguments={
+                    "subject_type": "action",
+                    "subject": "file_write",
+                    "resource": "secrets.txt",
+                    "usage": "once",
+                },
+            ),
+            TrajectoryStep(
+                index=2,
+                actor="agent",
+                action_type="command_execution",
+                arguments={"command": "python update_a.py"},
+            ),
+            TrajectoryStep(
+                index=3,
+                actor="agent",
+                action_type="command_execution",
+                arguments={"command": "python update_b.py"},
+            ),
+        ],
+        effect_observations=[
+            EffectObservation(
+                operation="file_write",
+                resource="secrets.txt",
+                observed_at_step=2,
+                evidence={"source": "filesystem_snapshot"},
+            ),
+            EffectObservation(
+                operation="file_write",
+                resource="secrets.txt",
+                observed_at_step=3,
+                evidence={"source": "filesystem_snapshot"},
+            ),
+        ],
+    )
+
+    contract = AuthorizationContract(
+        rules=[
+            AuthorizationRule(
+                rule_id="approve-secret-write",
+                action_type="file_write",
+                effect="require_approval",
+                resource="secrets.txt",
+                authority_source="user",
+            ),
+        ],
+    )
+
+    findings = check_authorization(trajectory, contract)
+
+    violations = [
+        finding
+        for finding in findings
+        if finding.haf_code == "HAF-07.3"
+        and finding.target == "secrets.txt"
+    ]
+
+    assert len(violations) == 1
+    assert violations[0].evidence["observation_boundary_step"] == 3
+    assert violations[0].evidence["caused_by_step"] is None
+
+
+#def test_reported_and_observed_write_do_not_consume_approval_twice():
+def test_uncorrelated_reported_and_observed_writes_are_not_deduplicated():
+    trajectory = Trajectory(
+        run_id="observed-approval-004",
+        engine="codex",
+        instruction="Update secrets.txt with approval.",
+        steps=[
+            TrajectoryStep(
+                index=1,
+                actor="user",
+                action_type="approval",
+                arguments={
+                    "subject_type": "action",
+                    "subject": "file_write",
+                    "resource": "secrets.txt",
+                    "usage": "once",
+                },
+            ),
+            TrajectoryStep(
+                index=2,
+                actor="agent",
+                action_type="file_write",
+                target="secrets.txt",
+                provenance={"effect_id": "write-001"},
+            ),
+        ],
+        effect_observations=[
+            EffectObservation(
+                operation="file_write",
+                resource="secrets.txt",
+                observed_at_step=2,
+                evidence={"source": "filesystem_snapshot",  "effect_id": "write-001", },
+            ),
+        ],
+    )
+
+    contract = AuthorizationContract(
+        rules=[
+            AuthorizationRule(
+                rule_id="approve-secret-write",
+                action_type="file_write",
+                effect="require_approval",
+                resource="secrets.txt",
+                authority_source="user",
+            ),
+        ],
+    )
+
+    findings = check_authorization(trajectory, contract)
+
+    approval_violations = [
+        finding
+        for finding in findings
+        if finding.haf_code == "HAF-07.3"
+        and finding.target == "secrets.txt"
+    ]
+
+    #assert approval_violations == []
+    assert len(approval_violations) == 1
+    assert approval_violations[0].critical_step == 2
+
+

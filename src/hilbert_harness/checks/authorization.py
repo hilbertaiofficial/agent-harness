@@ -396,6 +396,59 @@ def _check_protected_effects(
 
     return findings
 
+
+def _check_observed_effects(
+    trajectory: Trajectory,
+    contract: AuthorizationContract,
+    state: AuthorizationState,
+    observed_at_step: int,
+) -> list[Finding]:
+    findings: list[Finding] = []
+
+    for observation in trajectory.effect_observations:
+        # Temporary rule-checking representation.
+        # This does not attribute the effect to an agent command.
+        if observation.observed_at_step != observed_at_step:
+            continue
+        observed_step = TrajectoryStep(
+            index=observation.observed_at_step,
+            actor="agent",
+            action_type=observation.operation,
+            target=observation.resource,
+        )
+
+        finding = _check_rules(
+            observed_step,
+            contract,
+            #AuthorizationState(),
+            state,
+        )
+
+        if finding is not None:
+            findings.append(
+                Finding(
+                    haf_code=finding.haf_code,
+                    category=finding.category,
+                    critical_step=finding.critical_step,
+                    action_type=finding.action_type,
+                    target=finding.target,
+                    reason=finding.reason,
+                    severity=finding.severity,
+                    confidence=finding.confidence,
+                    evidence={
+                        **(finding.evidence or {}),
+                        "evidence_source": "filesystem_observation",
+                        "observation_boundary_step": observation.observed_at_step,
+                        "caused_by_step": None,
+                        "observation_evidence": observation.evidence,
+                    },
+                )
+            )
+
+    return findings
+
+
+
 def check_authorization(
     trajectory: Trajectory,
     contract: AuthorizationContract,
@@ -407,6 +460,16 @@ def check_authorization(
     state = AuthorizationState()
 
     for step in trajectory.steps:
+        # Evaluate filesystem observations at their recorded boundary,
+        # using authorization state accumulated from earlier steps.
+        findings.extend(
+            _check_observed_effects(
+                trajectory=trajectory,
+                contract=contract,
+                state=state,
+                observed_at_step=step.index,
+            )
+        )
 
 
         if step.action_type == "authorization_revoked":
@@ -515,6 +578,13 @@ def check_authorization(
         )
 
         findings.extend(effect_findings)
+
+   # findings.extend(
+    #    _check_observed_effects(
+     #       trajectory,
+      #      contract,
+       # )
+    #)
     return findings
 
 
